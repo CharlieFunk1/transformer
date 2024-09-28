@@ -209,8 +209,9 @@ def train_model(config):
         
     loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer_src.token_to_id('[PAD]'), label_smoothing=0.1).to(device)
     
-    for epoch in range(initial_epoch, config['num_epochs']):
+    for epoch in range(initial_epoch, config['num_epochs'] + initial_epoch):
         #print(epoch)
+        #print(type(epoch))
         torch.cuda.empty_cache()
         model.train()
         batch_iterator = tqdm(train_dataloader, desc=f"Processing epoch {epoch:02d}")
@@ -243,12 +244,12 @@ def train_model(config):
         optimizer.step()
         optimizer.zero_grad(set_to_none=True)
 
-        #if epoch % 20 == 0:
-            #run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, lambda msg: batch_iterator.write(msg), global_step, writer)
+        if epoch % 20 == 0:
+            run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, lambda msg: batch_iterator.write(msg), global_step, writer)
             
         global_step += 1
         
-    run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, lambda msg: batch_iterator.write(msg), global_step, writer)
+    #run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, lambda msg: batch_iterator.write(msg), global_step, writer)
 
     #Save the model at the end of every epoch
     model_filename = get_weights_file_path(config, f'{epoch:02d}')
